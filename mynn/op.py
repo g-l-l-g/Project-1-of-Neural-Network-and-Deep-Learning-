@@ -5,13 +5,14 @@ import cupy as cp
 
 class Layer(ABC):
     """
-    Abstract base class for neural network layers.
-
-    Subclasses must implement `forward` and `backward` methods.
-
+    神经网络层的抽象基类 (Abstract Base Class)。
+    所有具体的层都应从此类继承。子类必须实现 `forward` 和 `backward` 方法。
+    它为层参数、梯度以及优化相关的属性和方法提供了一个通用接口。
     Attributes:
-        params (dict): Layer parameters (e.g., weights, bias).
-        grads (dict): Gradients of parameters computed during backward pass.
+        params (dict): 存储层的可训练参数（例如，权重 'W' 和偏置 'b'）。
+                       键是参数名称（字符串），值是对应的 cp.ndarray。
+        grads (dict): 存储参数的梯度。结构与 `params` 相同，在反向传播期间计算。
+                      键是参数名称（字符串），值是对应的梯度 cp.ndarray。
     """
     def __init__(self) -> None:
         self.params = {}
@@ -57,19 +58,31 @@ class Layer(ABC):
 # 全连接层
 class Linear(Layer):
     """
-    全连接层（包含权重衰减功能）
+    实现一个标准的完全连接（或称为密集）神经网络层。
+    执行线性变换 `output = X @ W + b`，并支持 L2 权重衰减（正则化）。
+
     Args:
-        in_dim (int): 输入维度
-        out_dim (int): 输出维度
-        initialize_method (callable): 权重初始化方法（默认np.random.normal）,可选 Xavier 或 He 初始化
-        weight_decay_lambda (float): 正则化强度系数（默认1e-8）
+        in_dim (int): 输入特征的数量（即输入数据的最后一个维度的大小）。
+        out_dim (int): 输出特征的数量（即该层神经元的数量）。
+        initialize_method (str, optional): 权重初始化方法的名称。
+            支持 'HeInit', 'GaussianRandomInit', 'UniformRandomInit', 'XavierInit'。
+            默认为 'GaussianRandomInit'。
+        weight_decay_lambda (float, optional): L2 权重衰减（正则化）的强度系数。
+            如果为 0，则不应用权重衰减。默认为 0。
+        lr_scale (float, optional): 特定于该层的学习率缩放因子。
+            (注意：实际应用取决于优化器的实现)。默认为 1.0。
 
     Attributes:
-        params (dict): 存储优化参数 {'W': ..., 'b': ...}
-            W (np.ndarray): 权重矩阵，形状[in_dim, out_dim]
-            b (np.ndarray): 偏置向量，形状[1, out_dim]
-        grads (dict): 存储梯度 {'W': ..., 'b': ...}
-        input (np.ndarray): 缓存前向传播输入用于反向计算
+        params (dict): 包含 'W' (权重) 和 'b' (偏置) 的字典。
+            W (cp.ndarray): 权重矩阵，形状为 [in_dim, out_dim]。
+            b (cp.ndarray): 偏置向量，形状为 [1, out_dim]。
+        grads (dict): 包含 'W' 和 'b' 梯度的字典，形状与 params 中的对应项相同。
+        input (cp.ndarray | None): 缓存最近一次前向传播的输入 `X`，用于反向传播计算梯度。
+        in_dim (int): 输入维度。
+        out_dim (int): 输出维度。
+        initialize_method (str): 使用的权重初始化方法名称。
+        weight_decay_lambda (float): L2 权重衰减系数。
+        lr_scale (float): 学习率缩放因子。
     """
 
     def __init__(self, in_dim, out_dim, initialize_method='GaussianRandomInit',
@@ -149,11 +162,20 @@ class Linear(Layer):
 # 交叉熵损失
 class MultiCrossEntropyLoss(Layer):
     """
-    Cross-entropy loss with optional built-in Softmax layer (for numerical stability).
-    Use `cancel_softmax()` to disable the built-in Softmax when your model already includes one.
+    计算多分类交叉熵损失。
 
+    可以选择性地内置 Softmax 层以提高数值稳定性。如果模型的最后一层
+    已经是 Softmax，则应调用 `cancel_softmax()` 来禁用内置的 Softmax。
     Args:
-        model (Layer): Reference to the neural network model (for backpropagation).
+        model (Layer | None, optional): 对整个神经网络模型的引用。如果提供，
+            `backward` 方法可以直接调用模型的反向传播。默认为 None。
+
+    Attributes:
+        model (Layer | None): 对模型的引用（如果提供）。
+        has_softmax (bool): 指示是否在计算损失前应用内置 Softmax。默认为 True。
+        probabilities (cp.ndarray | None): 在前向传播中计算的（可能是 Softmax 之后的）概率。
+        labels_one_hot (cp.ndarray | None): 在前向传播中转换或接收到的 one-hot 编码标签。
+        batch_size (int | None): 最近一次前向传播的批次大小。
     """
 
     def __init__(self, model=None) -> None:
@@ -233,6 +255,40 @@ def softmax(X):
 
 
 class Conv2D(Layer):
+    """
+    实现二维卷积层。
+    对输入张量应用 2D 卷积操作，通常用于图像处理任务。
+    使用 im2col/col2im 技术进行高效计算，并支持 L2 权重衰减。
+
+    Args:
+        C_in (int): 输入通道数 (input channels/depth)。
+        C_out (int): 输出通道数 (number of filters)。
+        kernel_size (int): 卷积核的高度和宽度。
+        stride (int, optional): 卷积步长。默认为 1。
+        padding (int, optional): 应用于输入两侧的零填充量。默认为 0。
+        weight_decay_lambda (float, optional): L2 权重衰减（正则化）的强度系数。
+            应用于卷积核权重。默认为 0。
+        lr_scale (float, optional): 特定于该层的学习率缩放因子。
+            (注意：实际应用取决于优化器的实现)。默认为 1.0。
+
+    Attributes:
+        params (dict): 包含 'W' (卷积核权重) 和 'b' (偏置) 的字典。
+            W (cp.ndarray): 卷积核权重，形状为 [C_out, C_in, kernel_size, kernel_size]。
+            b (cp.ndarray): 偏置向量，形状为 [C_out]。
+        grads (dict): 包含 'W' 和 'b' 梯度的字典，形状与 params 中的对应项相同。
+        cache (tuple | None): 缓存前向传播中的中间值 (输入 X, X_col)，用于反向传播。
+        input_shape (tuple | None): 最近一次前向传播的输入 `X` 的形状。
+        C_in (int): 输入通道数。
+        C_out (int): 输出通道数。
+        kernel_size (int): 卷积核大小。
+        stride (int): 卷积步长。
+        padding (int): 零填充量。
+        weight_decay_lambda (float): L2 权重衰减系数。
+        lr_scale (float): 学习率缩放因子。
+        H_out (int | None): 计算得到的输出特征图的高度。
+        W_out (int | None): 计算得到的输出特征图的宽度。
+    """
+    
     def __init__(self, C_in=None, C_out=None, kernel_size=None,
                  stride=1, padding=0,  weight_decay_lambda=0, lr_scale=1.0):
         super().__init__()  # 启用父类初始化
@@ -331,6 +387,28 @@ class Conv2D(Layer):
 
 
 class MaxPooling2D(Layer):
+    """
+    实现二维最大池化层。
+
+    通过在输入的局部区域（窗口）上取最大值来对特征图进行下采样，
+    从而减小空间维度并提供一定的平移不变性。
+
+    Args:
+        pool_size (int, optional): 池化窗口的高度和宽度。默认为 2。
+        stride (int | None, optional): 池化操作的步长。如果为 None，则默认等于 `pool_size`。
+                                      若`stride`传入0或`None`，则等于`pool_size`，否则等于传入值。默认为1。
+        padding (int, optional): 应用于输入两侧的零填充量。默认为 0。
+
+    Attributes:
+        pool_size (int): 池化窗口大小。
+        stride (int): 池化步长。
+        padding (int): 零填充量。
+        max_mask (cp.ndarray | None): 缓存前向传播过程中每个池化窗口内最大值元素的索引，
+                                      用于反向传播时将梯度路由到正确的位置。
+        input_shape (tuple | None): 最近一次前向传播的输入 `X` 的形状。
+        H_out (int | None): 计算得到的输出特征图的高度。
+        W_out (int | None): 计算得到的输出特征图的宽度。
+    """
     def __init__(self, pool_size=2, stride=1, padding=0):
         super().__init__()
         self.pool_size = pool_size
@@ -469,7 +547,16 @@ def col2im(cols, input_shape, kernel_size, stride, padding, H_out, W_out):
 
 
 class Flatten(Layer):
-    """展平层"""
+    """
+    将多维输入张量展平成二维张量的层。
+
+    通常用于将卷积层/池化层的输出（形状如 [N, C, H, W]）
+    转换为适合全连接层的输入（形状如 [N, C*H*W]）。
+
+    Attributes:
+        input_shape (tuple | None): 缓存最近一次前向传播的输入的形状，
+                                   用于在反向传播时恢复梯度形状。
+    """
     def __init__(self):
         super().__init__()
         self.input_shape = None
