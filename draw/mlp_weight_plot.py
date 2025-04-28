@@ -1,11 +1,12 @@
 import pickle
+import os
 import matplotlib.pyplot as plt
 import cupy as cp
 import numpy as np
 import seaborn as sns
 
 
-def visualize_model_params(pkl_path):
+def visualize_model_params(pkl_path, output_dir=r'.\mlp_weight_plot'):
     with open(pkl_path, 'rb') as f:
         param_list = pickle.load(f)
 
@@ -25,7 +26,7 @@ def visualize_model_params(pkl_path):
         plt.title(f'Layer {layer_idx} Heatmap\n{W.shape}')
         plt.xlabel('Output Units')
         plt.ylabel('Input Units')
-        plt.savefig(f'./mlp_weight_plot/layer{layer_idx}_heatmap.png',
+        plt.savefig(os.path.join(output_dir, f'layer{layer_idx}_heatmap.png'),
                     dpi=300, bbox_inches='tight')
         plt.close()
 
@@ -47,10 +48,13 @@ def visualize_model_params(pkl_path):
         plt.xlabel('Parameter Value')
         plt.ylabel('Density')
         plt.grid(True, alpha=0.3)
-        plt.savefig(f'./mlp_weight_plot/layer{layer_idx}_distribution.png',
+        plt.savefig(os.path.join(output_dir, f'layer{layer_idx}_distribution.png'),
                     dpi=300, bbox_inches='tight')
         plt.close()
 
 
 # 注意需要写入准确的参数文件的地址
-visualize_model_params(r'D:\python object\neural network\project1\codes_gpu\result\test_MLP\model_11\best_model.pkl')
+visualize_model_params(
+    pkl_path=r'D:\python object\neural network\project1\codes_gpu\result\test_MLP\model_11\best_model.pkl',
+    output_dir=r'.\mlp_weight_plot'
+)
