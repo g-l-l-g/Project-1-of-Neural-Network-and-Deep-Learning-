@@ -148,46 +148,124 @@ def main(dir_, component_, layers_):
 
 
 if __name__ == "__main__":
-    # 下载配置
+    # 目录配置
     directory = {
+        # 保存训练结果（如模型权重、日志）的目录路径
+        # 类型: str
+        # 示例: r"./result/my_experiment", "/path/to/output"
         'save_dir': r"./result/test_MLP",
+
+        # 数据集所在的根目录路径
+        # 类型: str
+        # 示例: './dataset/MNIST', '/data/imagenet'
         'dataset_dir': './dataset/MNIST'
     }
 
     # 训练组件配置
     component = {
         'Loss_function': {
+            # 使用的损失函数名称
+            # 类型: str
+            # 可选值: 'MultiCrossEntropyLoss'
             'method': 'MultiCrossEntropyLoss'
         },
         'Optimizer': {
+            # 使用的优化器算法名称
+            # 类型: str
+            # 可选值: 'SGD', 'MomentumGD'
             'method': 'MomentumGD',
+
+            # 初始学习率
+            # 类型: float
+            # 范围: > 0 (例如: 1e-5 到 1.0)
             'init_lr': 0.3,
+
+            # 优化器特定的参数 (例如 Momentum 的 beta 值)
+            # 类型: float
+            # 范围: [0, 1) (对于 Momentum 通常 >= 0.8)
             'init_beta': 0.9
         },
         'Scheduler': {
+            # 学习率调度器名称
+            # 类型: str
+            # 可选值: 'StepLR', 'MultiStepLR', 'ExponentialLR'
             'method': 'StepLR',
+
+            # StepLR/ExponentialLR: 学习率衰减的周期（以 epoch 为单位）
+            # 类型: int
+            # 范围: > 0
             'step_size': 4,
+
+            # StepLR/MultiStepLR/ExponentialLR: 学习率衰减的乘法因子
+            # 类型: float
+            # 范围: (0, 1]
             'gamma': 0.5,
+
+            # MultiStepLR: 在哪些 epoch 进行学习率衰减的列表
+            # 类型: list[int] or None
+            # 示例: [30, 80, 120]
             'milestones': None
         },
-        'Runner': {
+        'Runner': {  # 训练/评估循环配置
+            # 每个批次的大小
+            # 类型: int
+            # 范围: > 0 (通常是 2 的幂，如 16, 32, 64, 128, ...)
             'batch_size': 16,
+
+            # 训练的总轮数 (epochs)
+            # 类型: int
+            # 范围: > 0
             'num_epochs': 10,
+
+            # 每隔多少次迭代 (iterations/batches) 更新模型并记录一次日志
+            # 类型: int
+            # 范围: > 0
             'log_iters': 200
         },
         'Early_Stopping': {
+            # 是否启用早停法
+            # 类型: bool
+            # 可选值: True, False
             'applying': False,
+
+            # 在停止前等待多少个没有改善的 epoch
+            # 类型: int
+            # 范围: >= 0 (如果 applying=True, 通常 > 0)
             'patience': 20,
+
+            # 被认为是改善所需的最小变化量 (监控指标，如 loss 或 accuracy)
+            # 类型: float
+            # 范围: >= 0 (例如: 0.0, 1e-4, 0.001)
             'min_delta': 0.0005,
+
+            # 是否在早停时打印消息
+            # 类型: bool
+            # 可选值: True, False
             'verbose': True
         }
     }
 
-    # 参数配置
+    # 模型层参数配置 (示例针对 MLP)
     layers = {
+        # 定义网络各层的大小（神经元数量），包括输入层和输出层
+        # 类型: list[int]
+        # 规则: 列表长度 >= 2，所有元素 > 0。第一个是输入维度，最后一个是输出维度。
+        # 示例: [784, 512, 10] (输入784, 隐藏层512, 输出10)
         'size_list': [784, 1024, 256, 64, 10],
+
+        # 用于隐藏层的激活函数名称。可以是单个字符串（应用于所有隐藏层）或列表（逐层指定）
+        # 类型: str or list[str]
+        # 可选值: 'ReLU', 'Sigmoid', 'Tanh'
         'act_func_list': 'Tanh',
+
+        # 正则化强度 (例如 L2 权重衰减的 lambda)。可以是单个值（全局）或列表（逐层）
+        # 类型: float or list[float]
+        # 典型范围: >= 0 (0 表示无正则化)
         'lambda_list': 0,
+
+        # 权重初始化方法的名称。可以是单个字符串（全局）或列表（逐层）
+        # 类型: str or list[str]
+        # 可选值: 'HeInit', 'XavierInit', 'GaussianRandomInit', 'UniformRandomInit' 
         'initialize_method': 'HeInit',
     }
 
