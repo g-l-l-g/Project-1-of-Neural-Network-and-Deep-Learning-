@@ -228,7 +228,7 @@ if __name__ == "__main__":
             # 可选值: True, False
             'applying': False,
 
-            # 在停止前等待多少个没有改善的迭代数
+            # 在停止前等待多少个没有改善的更新次数，与'log_iters'值相关
             # 类型: int
             # 范围: >= 0 (如果 applying=True, 通常 > 0)
             'patience': 20,
