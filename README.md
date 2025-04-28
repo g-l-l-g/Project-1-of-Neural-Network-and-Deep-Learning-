@@ -6,11 +6,11 @@
 一个基于 CIFAR-10 数据集的深度学习训练框架，支持模型训练、超参数搜索和可视化分析。
 
 ## 🚀 功能特性
-- ​**模型训练**：使用`test_CNN.py`进行MLP模型训练，结果保存在目录`\result\test_CNN`下
-- ​**模型训练**：使用`test_MLP.py`进行MLP模型训练，结果保存在目录`\result\test_MLP`下
-- ​**超参数搜索**：使用 `mlp_hyperparameter_search.py` 搜索MLP的超参数配置，结果保存在目录`\result\test_hyperparameter_search`下
-- ​**权重可视化**：在目录`\draw`下,使用 `mlp_weight_plot.py` 和 `cnn_weight_plot.py`生成参数可视化图像，图像分别保存在同名目录下
-- **训练过程可视化**：在目录`\draw`下,使用 `mlp_train_plot.py` 和 `cnn_train_plot.py`随训练轮数变化曲线，图像分别保存在同名目录下
+- ​**模型训练**：使用`test_CNN.py`进行MLP模型训练，结果保存在目录`/result/test_CNN`下
+- ​**模型训练**：使用`test_MLP.py`进行MLP模型训练，结果保存在目录`/result/test_MLP`下
+- ​**超参数搜索**：使用 `mlp_hyperparameter_search.py` 搜索MLP的超参数配置，结果保存在目录`/result/test_hyperparameter_search`下
+- ​**权重可视化**：在目录`/draw`下,使用 `mlp_weight_plot.py` 和 `cnn_weight_plot.py`生成参数可视化图像，图像分别保存在同名目录下
+- **训练过程可视化**：在目录`/draw`下,使用 `mlp_train_plot.py` 和 `cnn_train_plot.py`随训练轮数变化曲线，图像分别保存在同名目录下
 - ​**模型测试**： 使用`test_model.py`测试已训练模型在测试集上的准确率
 
 ## 📂 项目结构
@@ -70,8 +70,8 @@ pip install -r requirements.txt
 ### 准确率测试
 - 测试不同权重文件：修改`test_model.py`的字典directory的值以设置不同的数据集地址和模型地址，修改字典model_set的值以测试不同类型的模型
 ### 可视化
-- 训练过程可视化：在目录`\draw`下, 运行 `mlp_train_plot.py` 和 `cnn_train_plot.py`，超参数修改类同"训练模型"部分
-- 权重可视化：在目录`\draw`下, 运行`weight_plot.py`，需要在该文件的函数visualize_model_params（）中写入正确的权重文件地址（文件类型为.pkl）
+- 训练过程可视化：在目录`/draw`下, 运行 `mlp_train_plot.py` 和 `cnn_train_plot.py`，超参数修改类同"训练模型"部分
+- 权重可视化：在目录`/draw`下, 运行`mlp_weight_plot.py` 和 `cnn_weight_plot.py`，选定pkl_path值以选取模型，选定output_dir值以确定图像保存地址
 
 
 
