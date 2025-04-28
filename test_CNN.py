@@ -156,12 +156,31 @@ def main(directory_, component_, layers_):
 
 if __name__ == "__main__":
     # 下载配置
+    # 目录与数据配置
     directory = {
+        # 保存训练结果（如模型权重、日志）的目录路径
+        # 类型: str
+        # 示例: r".\result\cnn_experiment", "/path/to/output"
         'save_dir': ".\\result\\test_CNN",
+
+        # 数据集所在的根目录路径
+        # 类型: str
+        # 示例: '.\\dataset\\MNIST', '/data/cifar10'
         'dataset_dir': '.\\dataset\\MNIST',
+
+        # 输入数据的维度信息
         'data_size': {
+            # 输入图像的通道数 (例如：1 表示灰度图, 3 表示 RGB 彩色图)
+            # 类型: int
+            # 典型范围: > 0 (常用 1 或 3)
             'channels': 1,
+            # 输入图像的高度（像素）
+            # 类型: int
+            # 典型范围: > 0
             'height': 28,
+            # 输入图像的宽度（像素）
+            # 类型: int
+            # 典型范围: > 0
             'width': 28
         }
     }
@@ -169,35 +188,94 @@ if __name__ == "__main__":
     # 训练组件配置
     component = {
         'Loss_function': {
+            # 使用的损失函数名称
+            # 类型: str
+            # 可选值: 'MultiCrossEntropyLoss'
             'method': 'MultiCrossEntropyLoss'
         },
         'Optimizer': {
+            # 使用的优化器算法名称
+            # 类型: str
+            # 可选值: 'SGD', 'MomentumGD'
             'method': 'MomentumGD',
+
+            # 初始学习率
+            # 类型: float
+            # 范围: > 0 (例如: 1e-5 到 1.0, 常根据模型和数据集调整)
             'init_lr': 0.1,
+
+            # 优化器特定的参数 (例如 Momentum 的 beta 值)
+            # 类型: float
+            # 范围: [0, 1) (对于 Momentum 通常 >= 0.8, 如 0.9)
             'init_beta': 0.9,
         },
         'Scheduler': {
+            # 学习率调度器名称
+            # 类型: str
+            # 可选值: 'StepLR', 'MultiStepLR', 'ExponentialLR'
             'method': 'StepLR',
+
+            # StepLR/ExponentialLR: 学习率衰减的周期（以 epoch 为单位）
+            # 类型: int
+            # 范围: > 0
             'step_size': 9,
+
+            # StepLR/MultiStepLR/ExponentialLR: 学习率衰减的乘法因子
+            # 类型: float
+            # 范围: (0, 1] (例如: 0.1, 0.3, 0.5, 0.9)
             'gamma': 0.3,
+
+            # MultiStepLR: 在哪些 epoch 进行学习率衰减的列表
+            # 类型: list[int] or None
+            # 示例: [30, 80, 120]
             'milestones': None
         },
-        'Runner': {
-            'batch_size': 16,
-            'num_epochs': 20,
-            'log_iters': 100
+        'Runner': {  # 训练/评估循环配置
+            # 每个批次的大小
+            # 类型: int
+            # 范围: > 0 (通常是 2 的幂，如 16, 32, 64, 128, ..., 取决于 GPU 内存)
+            'batch_size': 64,
+
+            # 训练的总轮数 (epochs)
+            # 类型: int
+            # 范围: > 0 (例如: 10, 50, 100, ...)
+            'num_epochs': 1,
+
+            # 每隔多少次迭代 (iterations/batches) 记录一次日志
+            # 类型: int
+            # 范围: > 0
+            'log_iters': 300
         },
         'Early_Stopping': {
+            # 是否启用早停法
+            # 类型: bool
+            # 可选值: True, False
             'applying': False,
+
+            # 在停止前等待多少个没有改善的更新次数，与'log_iters'值相关
+            # 类型: int
+            # 典型范围: >= 0 (如果 applying=True, 通常 > 5 或 10)
             'patience': 20,
+
+            # 被认为是改善所需的最小变化量 (监控指标：验证集loss)
+            # 类型: float
+            # 典型范围: >= 0 (例如: 0.0, 1e-4, 0.001)
             'min_delta': 0.0001,
+
+            # 是否在早停时打印消息
+            # 类型: bool
+            # 可选值: True, False
             'verbose': True
         }
     }
 
     # 模型配置
+    # 按顺序定义网络的各个层。
     # 正则化在每个层中独立实现，可设置参数weight_decay_lambda。 若其值为0，表示不启用正则化；若其值大于0，表示启用正则化
-    # 不在layers中显式配置损失函数层，默认使用交叉熵损失函数，配置在cnn_train()函数中
+    # 损失函数层可以不在此列表中定义，默认在训练脚本中使用 MultiCrossEntropyLoss，其在cnn_train()函数中配置
+    # 可选层级[Conv2D(), MaxPooling2D(), Linear(), Flatten(), MultiCrossEntropyLoss(), ReLU(), Logistic(), Tanh()],
+    # 上述各层可选参数具体见"./mynn/op.py"和"./mynn/activation_function.py"中的注释，此处不再赘述
+    # 线性层初始化时最好使用'He'或'Xavier'方法，否则模型可能无法正常被优化
     layers = [
         Conv2D(C_in=1, C_out=8, kernel_size=11, stride=1, padding=3, weight_decay_lambda=0),  # 24
         ReLU(),
