@@ -54,7 +54,7 @@
 ### 环境要求
 - Python 3.8+ （本项目使用3.10）
 - CUDA 12.5 （项目使用 GPU 加速），下载链接 <https://developer.nvidia.com/cuda-12-5-0-download-archive>, 注意需要下载到C盘中，并添加环境变量（如下图所示），否则可能无法正常运行
--  ![环境变量设置](ev_settings.png)
+-  ![环境变量设置](\img\ev_settings.png)
   
 ### 快速安装
 #### 安装依赖
