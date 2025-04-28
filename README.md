@@ -62,6 +62,9 @@ pip install -r requirements.txt
 
 ## 🛠 使用说明
 - 超参数配置范围，具体见train.py中model_train()函数定义
+- 算子配置见`/mynn/op.py`文件
+### 库调用路径修改
+- 在`test_MLP.py`，`test_CNN.py`，`test_model.py`，`/draw/mlp_train_plot.py`，`/draw/cnn_train_plot.py`文件的库函数导入模块，需要正确修改库识别路径以能正确导入自定义库mynn
 ### 训练模型
 - MLP：在`test_MLP.py`文件中根据参数可选范围修改字典directory，component，layers中值
 - CNN：在`test_CNN.py`文件中根据参数可选范围修改字典directory，component，layers中值
@@ -72,6 +75,8 @@ pip install -r requirements.txt
 ### 可视化
 - 训练过程可视化：在目录`/draw`下, 运行 `mlp_train_plot.py` 和 `cnn_train_plot.py`，超参数修改类同"训练模型"部分
 - 权重可视化：在目录`/draw`下, 运行`mlp_weight_plot.py` 和 `cnn_weight_plot.py`，选定pkl_path值以选取模型，选定output_dir值以确定图像保存地址
+
+
 
 
 
