@@ -6,11 +6,11 @@
 一个基于 CIFAR-10 数据集的深度学习训练框架，支持模型训练、超参数搜索和可视化分析。
 
 ## 🚀 功能特性
-- ​**模型训练**：使用`test_CNN.py`进行MLP模型训练，结果保存在目录`/result/test_CNN`下
+- ​**模型训练**：使用`test_CNN.py`进行CNN模型训练，结果保存在目录`/result/test_CNN`下
 - ​**模型训练**：使用`test_MLP.py`进行MLP模型训练，结果保存在目录`/result/test_MLP`下
 - ​**超参数搜索**：使用 `mlp_hyperparameter_search.py` 搜索MLP的超参数配置，结果保存在目录`/result/test_hyperparameter_search`下
 - ​**权重可视化**：在目录`/draw`下,使用 `mlp_weight_plot.py` 和 `cnn_weight_plot.py`生成参数可视化图像，图像分别保存在同名目录下
-- **训练过程可视化**：在目录`/draw`下,使用 `mlp_train_plot.py` 和 `cnn_train_plot.py`随训练轮数变化曲线，图像分别保存在同名目录下
+- **训练过程可视化**：在目录`/draw`下,使用 `mlp_train_plot.py` 和 `cnn_train_plot.py`生成训练过程可视化曲线，图像分别保存在同名目录下
 - ​**模型测试**： 使用`test_model.py`测试已训练模型在测试集上的准确率
 
 ## 📂 项目结构
@@ -61,7 +61,7 @@
 pip install -r requirements.txt
 
 ## 🛠 使用说明
-- 超参数配置范围，具体见train.py中model_train()函数定义
+- 超参数配置范围，具体见`test_MLP.py`和`test_CNN.py`文件中的注释
 - 算子配置见`/mynn/op.py`文件
 ### 库调用路径修改
 - 在`test_MLP.py`，`test_CNN.py`，`test_model.py`，`/draw/mlp_train_plot.py`，`/draw/cnn_train_plot.py`文件的库函数导入模块，需要正确修改库识别路径以能正确导入自定义库mynn
