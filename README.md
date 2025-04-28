@@ -61,17 +61,17 @@
 pip install -r requirements.txt
 
 ## 🛠 使用说明
-- 数据集地址配置，由train.py中model_train()函数下`data_dir`定义（可自行修改）
 - 超参数配置范围，具体见train.py中model_train()函数定义
 ### 训练模型
-- 修改超参数：在`test_train.py`文件中根据参数可选范围（见参数配置）修改字典train_params中的超参值
+- MLP：在`test_MLP.py`文件中根据参数可选范围修改字典directory，component，layers中值
+- CNN：在`test_CNN.py`文件中根据参数可选范围修改字典directory，component，layers中值
 ### 超参数搜索
-- 修改搜索范围：在`hyperparameter_search.py`文件中修改字典search_config中各个键的值
+- 修改搜索范围：在`mlp_hyperparameter_search.py`文件中修改字典search_config中各个键的值的范围
 ### 准确率测试
-- 测试不同权重文件：修改model.load_model（）中地址的值可测试不同权重文件在测试集下的准确率
+- 测试不同权重文件：修改`test_model.py`的字典directory的值以设置不同的数据集地址和模型地址，修改字典model_set的值以测试不同类型的模型
 ### 可视化
-- 训练过程可视化：运行`train_plot.py`，超参数修改类同"训练模型"部分
-- 权重可视化：运行`weight_plot.py`，需要在该文件的函数visualize_model_params（）中写入正确的权重文件地址（文件类型为.pkl）
+- 训练过程可视化：在目录`\draw`下, 运行 `mlp_train_plot.py` 和 `cnn_train_plot.py`，超参数修改类同"训练模型"部分
+- 权重可视化：在目录`\draw`下, 运行`weight_plot.py`，需要在该文件的函数visualize_model_params（）中写入正确的权重文件地址（文件类型为.pkl）
 
 
 
